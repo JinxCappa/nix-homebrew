@@ -369,6 +369,9 @@ let
     # $LOAD_PATH entries pointing into the Nix store (which don't
     # exist for this Ruby version). Skip it and use the gem paths
     # already configured by install_bundler_gems!/setup_gem_environment!.
+    # We still need fiddle on the load path (normally added to setup.rb
+    # by the Ruby patching step above).
+    fiddle_lib="${ruby.gems.fiddle}/${ruby.gemPath}/gems/fiddle-${ruby.gems.fiddle.version}/lib"
     init_rb="$out/Library/Homebrew/standalone/init.rb"
     if [[ -e "$init_rb" ]]; then
       >&2 echo "Patching standalone/init.rb..."
@@ -376,7 +379,11 @@ let
       substituteInPlace "$init_rb" \
         --replace-fail \
           'require_relative "../vendor/bundle/bundler/setup"' \
-          'require_relative "../vendor/bundle/bundler/setup" if gems_vendored'
+          "if gems_vendored
+  require_relative \"../vendor/bundle/bundler/setup\"
+else
+  \$:.unshift \"$fiddle_lib\"
+end"
     fi
   '' + lib.optionalString (brew ? version) ''
     # Embed version number instead of checking with git
