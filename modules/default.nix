@@ -324,7 +324,8 @@ let
     # Nix store, so the default RUBY_BUNDLE_VENDOR_DIRECTORY
     # (HOMEBREW_LIBRARY_PATH/"vendor/bundle/ruby") is not writable.
     # We redirect it to $HOMEBREW_CACHE/vendor-bundle/ruby which is
-    # always writable and cross-platform:
+    # always writable and cross-platform (HOMEBREW_CACHE is always set
+    # by brew.sh before any Ruby code runs):
     #   macOS: ~/Library/Caches/Homebrew/vendor-bundle/ruby
     #   Linux: ${XDG_CACHE_HOME:-~/.cache}/Homebrew/vendor-bundle/ruby
     gems_rb="$out/Library/Homebrew/utils/gems.rb"
@@ -334,7 +335,7 @@ let
       substituteInPlace "$gems_rb" \
         --replace-fail \
           'RUBY_BUNDLE_VENDOR_DIRECTORY = (HOMEBREW_LIBRARY_PATH/"vendor/bundle/ruby").freeze' \
-          'RUBY_BUNDLE_VENDOR_DIRECTORY = (Pathname(ENV.fetch("HOMEBREW_CACHE", File.join(Dir.home, ".cache", "Homebrew")))/"vendor-bundle/ruby").freeze'
+          'RUBY_BUNDLE_VENDOR_DIRECTORY = (Pathname(ENV.fetch("HOMEBREW_CACHE"))/"vendor-bundle/ruby").freeze'
     fi
   '' + lib.optionalString (brew ? version) ''
     # Embed version number instead of checking with git
