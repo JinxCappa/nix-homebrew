@@ -342,15 +342,16 @@ let
           'RUBY_BUNDLE_VENDOR_DIRECTORY = (Pathname(ENV.fetch("HOMEBREW_CACHE"))/"vendor-bundle/ruby").freeze'
     fi
 
-    # Patch .bundle/config to remove BUNDLE_PATH which defaults to
-    # "vendor/bundle" (relative, resolves into the read-only Nix store).
-    # Without BUNDLE_PATH, bundler falls back to GEM_HOME which we've
-    # already redirected above via RUBY_BUNDLE_VENDOR_DIRECTORY.
-    bundle_config="$out/Library/Homebrew/.bundle/config"
-    if [[ -e "$bundle_config" ]]; then
-      >&2 echo "Patching .bundle/config..."
-      chmod u+w "$out/Library/Homebrew/.bundle" "$bundle_config"
-      sed -i.bak '/^BUNDLE_PATH:/d' "$bundle_config" && rm -f "$bundle_config.bak"
+    # Patch install_bundler_gems! to set BUNDLE_PATH to the writable
+    # cache directory. The .bundle/config has BUNDLE_PATH: "vendor/bundle"
+    # (relative, resolves into the read-only Nix store). Setting the env
+    # var overrides the config file and keeps bundler aware this is an
+    # isolated install (so bundle clean works correctly).
+    if [[ -e "$gems_rb" ]]; then
+      substituteInPlace "$gems_rb" \
+        --replace-fail \
+          'ENV["BUNDLE_GEMFILE"] = gemfile' \
+          'ENV["BUNDLE_PATH"] = RUBY_BUNDLE_VENDOR_DIRECTORY.to_s; ENV["BUNDLE_GEMFILE"] = gemfile'
     fi
   '' + lib.optionalString (brew ? version) ''
     # Embed version number instead of checking with git
