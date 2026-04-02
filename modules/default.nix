@@ -325,9 +325,7 @@ let
     # (HOMEBREW_LIBRARY_PATH/"vendor/bundle/ruby") is not writable.
     # We redirect it to $HOMEBREW_CACHE/vendor-bundle/ruby which is
     # always writable and cross-platform (HOMEBREW_CACHE is always set
-    # by brew.sh before any Ruby code runs):
-    #   macOS: ~/Library/Caches/Homebrew/vendor-bundle/ruby
-    #   Linux: ${XDG_CACHE_HOME:-~/.cache}/Homebrew/vendor-bundle/ruby
+    # by brew.sh before any Ruby code runs).
     gems_rb="$out/Library/Homebrew/utils/gems.rb"
     if [[ -e "$gems_rb" ]]; then
       >&2 echo "Patching gem installation path..."
