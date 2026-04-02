@@ -128,6 +128,7 @@ let
       # This relaxes the Gemfile's ruby version constraint from ~> 3.4.0
       # to >= 3.4.0, allowing newer Ruby versions provided by nixpkgs.
       export HOMEBREW_USE_RUBY_FROM_PATH=1
+
     '' + lib.optionalString (!cfg.mutableTaps) ''
       # Disable auto-update since everything is pinned
       export HOMEBREW_NO_AUTO_UPDATE=1
@@ -339,6 +340,17 @@ let
         --replace-fail \
           'RUBY_BUNDLE_VENDOR_DIRECTORY = (HOMEBREW_LIBRARY_PATH/"vendor/bundle/ruby").freeze' \
           'RUBY_BUNDLE_VENDOR_DIRECTORY = (Pathname(ENV.fetch("HOMEBREW_CACHE"))/"vendor-bundle/ruby").freeze'
+    fi
+
+    # Patch .bundle/config to remove BUNDLE_PATH which defaults to
+    # "vendor/bundle" (relative, resolves into the read-only Nix store).
+    # Without BUNDLE_PATH, bundler falls back to GEM_HOME which we've
+    # already redirected above via RUBY_BUNDLE_VENDOR_DIRECTORY.
+    bundle_config="$out/Library/Homebrew/.bundle/config"
+    if [[ -e "$bundle_config" ]]; then
+      >&2 echo "Patching .bundle/config..."
+      chmod u+w "$out/Library/Homebrew/.bundle" "$bundle_config"
+      sed -i '' '/^BUNDLE_PATH:/d' "$bundle_config"
     fi
   '' + lib.optionalString (brew ? version) ''
     # Embed version number instead of checking with git
