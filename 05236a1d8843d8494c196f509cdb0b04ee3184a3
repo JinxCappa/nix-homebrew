@@ -1,0 +1,23 @@
+modules/default.nix
+  bd968b8f944cf3fd 345-349,354,357-358
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.4",
+  "base_commit_sha": "05236a1d8843d8494c196f509cdb0b04ee3184a3",
+  "prompts": {
+    "bd968b8f944cf3fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a2ab207-50bb-4e46-a06c-ded1138d2b93",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "JinxCappa",
+      "messages": [],
+      "total_additions": 8,
+      "total_deletions": 10,
+      "accepted_lines": 8,
+      "overriden_lines": 0
+    }
+  }
+}
