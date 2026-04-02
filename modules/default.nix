@@ -317,6 +317,25 @@ let
       echo -e "setup-ruby-path() { export HOMEBREW_RUBY_PATH=\"${ruby}/bin/ruby\"; }" >>"$ruby_sh"
       echo -e "$:.unshift \"${ruby.gems.fiddle}/${ruby.gemPath}/gems/fiddle-${ruby.gems.fiddle.version}/lib\"" >>"$bundler_setup_rb"
     fi
+
+    # Redirect gem installation to a writable, user-owned directory.
+    #
+    # HOMEBREW_LIBRARY_PATH resolves through symlinks into the read-only
+    # Nix store, so the default RUBY_BUNDLE_VENDOR_DIRECTORY
+    # (HOMEBREW_LIBRARY_PATH/"vendor/bundle/ruby") is not writable.
+    # We redirect it to $HOMEBREW_CACHE/vendor-bundle/ruby which is
+    # always writable and cross-platform:
+    #   macOS: ~/Library/Caches/Homebrew/vendor-bundle/ruby
+    #   Linux: ${XDG_CACHE_HOME:-~/.cache}/Homebrew/vendor-bundle/ruby
+    gems_rb="$out/Library/Homebrew/utils/gems.rb"
+    if [[ -e "$gems_rb" ]]; then
+      >&2 echo "Patching gem installation path..."
+      chmod u+w "$gems_rb"
+      substituteInPlace "$gems_rb" \
+        --replace-fail \
+          'RUBY_BUNDLE_VENDOR_DIRECTORY = (HOMEBREW_LIBRARY_PATH/"vendor/bundle/ruby").freeze' \
+          'RUBY_BUNDLE_VENDOR_DIRECTORY = (Pathname(ENV.fetch("HOMEBREW_CACHE", File.join(Dir.home, ".cache", "Homebrew")))/"vendor-bundle/ruby").freeze'
+    fi
   '' + lib.optionalString (brew ? version) ''
     # Embed version number instead of checking with git
     brew_sh="$out/Library/Homebrew/brew.sh"
