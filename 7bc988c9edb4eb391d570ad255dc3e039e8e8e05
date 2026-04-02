@@ -1,0 +1,23 @@
+modules/default.nix
+  bd968b8f944cf3fd 328
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.4",
+  "base_commit_sha": "7bc988c9edb4eb391d570ad255dc3e039e8e8e05",
+  "prompts": {
+    "bd968b8f944cf3fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a2ab207-50bb-4e46-a06c-ded1138d2b93",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "JinxCappa",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 3,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
