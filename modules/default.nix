@@ -350,7 +350,7 @@ let
     if [[ -e "$bundle_config" ]]; then
       >&2 echo "Patching .bundle/config..."
       chmod u+w "$out/Library/Homebrew/.bundle" "$bundle_config"
-      sed -i '' '/^BUNDLE_PATH:/d' "$bundle_config"
+      sed -i.bak '/^BUNDLE_PATH:/d' "$bundle_config" && rm -f "$bundle_config.bak"
     fi
   '' + lib.optionalString (brew ? version) ''
     # Embed version number instead of checking with git
