@@ -342,22 +342,20 @@ let
           'RUBY_BUNDLE_VENDOR_DIRECTORY = (Pathname(ENV.fetch("HOMEBREW_CACHE"))/"vendor-bundle/ruby").freeze'
     fi
 
-    # Patch .bundle/config to redirect BUNDLE_PATH from "vendor/bundle"
-    # (relative, resolves into the read-only Nix store) to the writable
-    # cache directory. We also set BUNDLE_PATH in install_bundler_gems!
-    # via env var (which takes precedence) as a safety net.
+    # Remove BUNDLE_PATH and BUNDLE_CLEAN from .bundle/config.
+    # BUNDLE_PATH defaults to "vendor/bundle" (relative, resolves into
+    # the read-only Nix store). BUNDLE_CLEAN causes "dangerous" errors
+    # when bundler doesn't have an isolated install path.
+    # We set BUNDLE_PATH via env var in gems.rb instead.
     bundle_config="$out/Library/Homebrew/.bundle/config"
     if [[ -e "$bundle_config" ]]; then
       >&2 echo "Patching .bundle/config..."
       chmod u+w "$out/Library/Homebrew/.bundle" "$bundle_config"
-      substituteInPlace "$bundle_config" \
-        --replace-fail \
-          'BUNDLE_PATH: "vendor/bundle"' \
-          'BUNDLE_PATH: "__nix_homebrew_vendor_bundle__"'
+      sed -i.bak '/^BUNDLE_PATH:/d; /^BUNDLE_CLEAN:/d' "$bundle_config" && rm -f "$bundle_config.bak"
     fi
 
-    # Also set BUNDLE_PATH env var in install_bundler_gems! to the
-    # writable cache directory. BUNDLE_PATH expects the parent of the
+    # Set BUNDLE_PATH env var in install_bundler_gems! to the writable
+    # cache directory. BUNDLE_PATH expects the parent of the
     # ruby/<version> tree (bundler adds ruby/<version> itself).
     if [[ -e "$gems_rb" ]]; then
       substituteInPlace "$gems_rb" \
