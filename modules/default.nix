@@ -123,6 +123,11 @@ let
       # fake before/after versions to make `update-report.rb` happy
       export HOMEBREW_UPDATE_BEFORE="nix"
       export HOMEBREW_UPDATE_AFTER="nix"
+
+      # Use the Nix-provided Ruby instead of Homebrew's vendored one.
+      # This relaxes the Gemfile's ruby version constraint from ~> 3.4.0
+      # to >= 3.4.0, allowing newer Ruby versions provided by nixpkgs.
+      export HOMEBREW_USE_RUBY_FROM_PATH=1
     '' + lib.optionalString (!cfg.mutableTaps) ''
       # Disable auto-update since everything is pinned
       export HOMEBREW_NO_AUTO_UPDATE=1
